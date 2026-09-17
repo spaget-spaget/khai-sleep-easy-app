@@ -30,8 +30,8 @@ dependencies {
   implementation "io.getstream:stream-log-android-file:1.1.4"
 
   // Nordic BLE observer interface required by Lepu SDK
-  implementation "no.nordicsemi.android:ble:2.7.2"
+  implementation "no.nordicsemi.android:ble:2.10.0"
 
   // Lepu BLE library pulled from local Maven repo
-  implementation(name: "lepu-blepro-1.0.7", ext: "aar")
+  implementation(name: "lepu-blepro-1.4.1", ext: "aar")
 }

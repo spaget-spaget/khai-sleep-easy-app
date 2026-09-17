@@ -14,7 +14,7 @@ const EXTRA_DEPS = [
   'implementation project(":liveeventbus-x")',
   'implementation "io.getstream:stream-log-android:1.1.4"',
   'implementation "io.getstream:stream-log-android-file:1.1.4"',
-  'implementation "no.nordicsemi.android:ble:2.7.2"',
+  'implementation "no.nordicsemi.android:ble:2.10.0"',
 ];
 
 const ensureLines = (text, block) =>
