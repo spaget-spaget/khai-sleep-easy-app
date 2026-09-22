@@ -91,7 +91,8 @@ export function O2RingProvider({ children }: { children: React.ReactNode }) {
     completed: 0,
   });
   const [patientId, setPatientId] = useState<string | null>(null);
-  const infoRetryTimer = React.useRef<NodeJS.Timeout | null>(null);
+  //const infoRetryTimer = React.useRef<NodeJS.Timeout | null>(null);
+  const infoRetryTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null); // Replaced with new line as per documentation
   const patientIdRef = React.useRef<string | null>(null);
   const connectedDeviceRef = React.useRef<DeviceItem | null>(null);
   const serviceReadyRef = React.useRef(serviceReady);
@@ -100,21 +101,28 @@ export function O2RingProvider({ children }: { children: React.ReactNode }) {
   const syncingPatientId = React.useRef<Promise<string | null> | null>(null);
   const readQueue = React.useRef<string[]>([]);
   const currentReading = React.useRef<string | null>(null);
-  const readTimeout = React.useRef<NodeJS.Timeout | null>(null);
+  //const readTimeout = React.useRef<NodeJS.Timeout | null>(null);
+  const readTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null); // Replaced with new line as per documentation
   const readAttempts = React.useRef<Map<string, number>>(new Map());
   const realtimeStartPromise = React.useRef<Promise<boolean> | null>(null);
   const knownDevicesRef = React.useRef<DeviceItem[]>([]);
   const autoReconnectAttempted = React.useRef(false);
-  const autoReconnectScanTimeout = React.useRef<NodeJS.Timeout | null>(null);
+  //const autoReconnectScanTimeout = React.useRef<NodeJS.Timeout | null>(null);
+  const autoReconnectScanTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null); //Replaced with new line as per documentation
   const connectingRef = React.useRef(false);
   const autoConnectingRef = React.useRef(false);
   const autoReconnectEnabled = React.useRef(true);
   const isDownloadingHistoryRef = React.useRef(false);
   const totalFilesToDownload = React.useRef(0);
   const downloadedFiles = React.useRef(0);
-  const rawBase = __DEV__ ? API_DEV : API_PROD;
+  //Old Const rawBase code commented for safekeeping
+  //const rawBase = __DEV__ ? API_DEV : API_PROD;
+  const rawBase = API_DEV || "http://192.168.68.79/SleepEasy/ApiBackend";
   const baseURL = rawBase?.replace(/\/+$/, "");
-
+  console.log("====================================");
+  console.log("Resolved Base URL:", baseURL);
+  console.log("Is DEV mode?", __DEV__);
+  console.log("====================================");
   // -------------------
   // MARK: Patient ID
   // -------------------
@@ -348,6 +356,54 @@ const processReadQueue = useCallback(() => {
     });
   }, []);
 
+  /**
+   * Start realtime streaming with retries. BLE can easily stall when the system is busy,
+   * so we ensure that only one attempt is active and back off between retries.
+   */
+  const startRealtimeStream = useCallback(async () => {
+    if (realtimeStartPromise.current) {
+      return realtimeStartPromise.current;
+    }
+
+    // Must have a device
+    if (!connectedDeviceRef.current) {
+      console.warn("startRealtime: no connected device yet");
+      return Promise.resolve(false);
+    }
+
+    // On iOS, must wait for serviceReady
+    if (Platform.OS === "ios" && !serviceReadyRef.current) {
+      console.warn("startRealtime: service not ready yet");
+      return Promise.resolve(false);
+    }
+
+    if (Platform.OS === "ios") {
+      setIosRealtimeReady(false);
+    }
+
+    const attempt = async (count: number): Promise<boolean> => {
+      try {
+        await O2Ring.startRealtime();
+        return true;
+      } catch (e) {
+        console.warn(
+          `Error@O2RingProvider.tsx/startRealtime attempt ${count}: `,
+          e
+        );
+        if (count >= 10) return false;
+        await new Promise((resolve) => setTimeout(resolve, 500 * count));
+        return attempt(count + 1);
+      }
+    };
+
+    const promise = attempt(1).finally(() => {
+      realtimeStartPromise.current = null;
+    });
+
+    realtimeStartPromise.current = promise;
+    return promise;
+  }, []);
+
   // Once connected, keep polling getInfo until native responds so history download always kicks in.
   useEffect(() => {
     if (!connectedDevice || !serviceReady) return;
@@ -406,54 +462,6 @@ const processReadQueue = useCallback(() => {
       setHasPermission(false);
       return false;
     }
-  }, []);
-
-  /**
-   * Start realtime streaming with retries. BLE can easily stall when the system is busy,
-   * so we ensure that only one attempt is active and back off between retries.
-   */
-  const startRealtimeStream = useCallback(async () => {
-    if (realtimeStartPromise.current) {
-      return realtimeStartPromise.current;
-    }
-
-    // Must have a device
-    if (!connectedDeviceRef.current) {
-      console.warn("startRealtime: no connected device yet");
-      return Promise.resolve(false);
-    }
-
-    // On iOS, must wait for serviceReady
-    if (Platform.OS === "ios" && !serviceReadyRef.current) {
-      console.warn("startRealtime: service not ready yet");
-      return Promise.resolve(false);
-    }
-
-    if (Platform.OS === "ios") {
-      setIosRealtimeReady(false);
-    }
-
-    const attempt = async (count: number): Promise<boolean> => {
-      try {
-        await O2Ring.startRealtime();
-        return true;
-      } catch (e) {
-        console.warn(
-          `Error@O2RingProvider.tsx/startRealtime attempt ${count}: `,
-          e
-        );
-        if (count >= 10) return false;
-        await new Promise((resolve) => setTimeout(resolve, 500 * count));
-        return attempt(count + 1);
-      }
-    };
-
-    const promise = attempt(1).finally(() => {
-      realtimeStartPromise.current = null;
-    });
-
-    realtimeStartPromise.current = promise;
-    return promise;
   }, []);
 
   useEffect(() => {
@@ -652,14 +660,44 @@ const processReadQueue = useCallback(() => {
           infoRetryTimer.current = null;
           infoRetryCount.current = 0;
         }
-
+// Old Code commented for safekeeping
+//         setBattery(
+//           (() => {
+//             const parsed =
+//               typeof info.battery === "number" && Number.isFinite(info.battery)
+//                 ? info.battery
+//                 : typeof info.battery === "string"
+//                 ? parseInt(info.battery.match(/-?\d+/)?.[0] ?? "", 10)
+//                 : null;
+//
+//             return typeof parsed === "number" && !Number.isNaN(parsed)
+//               ? Math.max(0, Math.min(100, parsed))
+//               : null;
+//           })()
+//         );
+//         setBatteryState(
+//           (() => {
+//             const parsed =
+//               typeof info.batteryState === "number" &&
+//               Number.isFinite(info.batteryState)
+//                 ? info.batteryState
+//                 : typeof info.batteryState === "string"
+//                 ? parseInt(info.batteryState.match(/-?\d+/)?.[0] ?? "", 10)
+//                 : null;
+//
+//             return typeof parsed === "number" && !Number.isNaN(parsed)
+//               ? Math.max(0, Math.min(3, parsed))
+//               : null;
+//           })()
+//         );
         setBattery(
           (() => {
+            const raw: unknown = info.battery;
             const parsed =
-              typeof info.battery === "number" && Number.isFinite(info.battery)
-                ? info.battery
-                : typeof info.battery === "string"
-                ? parseInt(info.battery.match(/-?\d+/)?.[0] ?? "", 10)
+              typeof raw === "number" && Number.isFinite(raw)
+                ? raw
+                : typeof raw === "string"
+                ? parseInt(raw.match(/-?\d+/)?.[0] ?? "", 10)
                 : null;
 
             return typeof parsed === "number" && !Number.isNaN(parsed)
@@ -670,12 +708,12 @@ const processReadQueue = useCallback(() => {
 
         setBatteryState(
           (() => {
+            const raw: unknown = info.batteryState;
             const parsed =
-              typeof info.batteryState === "number" &&
-              Number.isFinite(info.batteryState)
-                ? info.batteryState
-                : typeof info.batteryState === "string"
-                ? parseInt(info.batteryState.match(/-?\d+/)?.[0] ?? "", 10)
+              typeof raw === "number" && Number.isFinite(raw)
+                ? raw
+                : typeof raw === "string"
+                ? parseInt(raw.match(/-?\d+/)?.[0] ?? "", 10)
                 : null;
 
             return typeof parsed === "number" && !Number.isNaN(parsed)
@@ -683,7 +721,6 @@ const processReadQueue = useCallback(() => {
               : null;
           })()
         );
-
         const patient =
           patientIdRef.current ?? (await syncPatientId().catch(() => null));
 

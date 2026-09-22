@@ -17,8 +17,17 @@ import { Directory, Paths, File as ExpoFile } from "expo-file-system";
 import { router } from "expo-router";
 import { uploadCsv } from "../service/History";
 
-const rawBase = __DEV__ ? API_DEV : API_PROD;
+//Base settings
+//const rawBase = __DEV__ ? API_DEV : API_PROD;
+//const baseURL = rawBase?.replace(/\/+$/, "");
+
+//Dev Mode
+const rawBase = API_DEV || "http://192.168.68.79/SleepEasy/ApiBackend";
 const baseURL = rawBase?.replace(/\/+$/, "");
+console.log("====================================");
+console.log("Resolved Base URL:", baseURL);
+console.log("Is DEV mode?", __DEV__);
+console.log("====================================");
 
 // same helper as history/index.tsx
 const getO2dataDir = (patientId: string) =>
@@ -122,10 +131,8 @@ export default function ShareScreen() {
       router.replace("/(tabs)/history");
     } catch (e: any) {
       console.error("Error@Share.tsx:", e?.message ?? e);
-      Alert.alert(
-        "Error@Share.tsx",
-        "Upload failed. Please check your network."
-      );
+      //Alert.alert("Error@Share.tsx","Upload failed. Please check your network."
+          Alert.alert("Error@Share.tsx", e?.message ?? "An error occurred during upload.");
     } finally {
       setUploading(false);
     }

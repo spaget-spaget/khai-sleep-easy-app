@@ -27,6 +27,7 @@
         "foregroundImage": "./assets/sleepeasylogo-android.png",
         "backgroundColor": "#ffffff"
       },
+      "usesCleartextTraffic": true,
       "edgeToEdgeEnabled": true,
       "package": "com.sleepeasy.app"
     },
@@ -54,7 +55,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "d0f45c21-0674-48c6-b03c-37882490281a"
+        "projectId": "35418764-7a1f-44c8-b28d-91d9b35ba28e"
       }
     }
   }

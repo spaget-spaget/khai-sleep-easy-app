@@ -115,45 +115,54 @@ export function readHistoryFile(filename: string) {
 export function addDeviceFoundListener(
   listener: (e: DeviceFoundEvent) => void
 ) {
-  return emitter.addListener<DeviceFoundEvent>("onDeviceFound", listener);
+  // return emitter.addListener<DeviceFoundEvent>("onDeviceFound", listener);
+  return (emitter.addListener as any)("onDeviceFound", listener);
 }
 
 export function addConnectedListener(listener: (e: ConnectedEvent) => void) {
-  return emitter.addListener<ConnectedEvent>("onConnected", listener);
+  // return emitter.addListener<ConnectedEvent>("onConnected", listener);
+  return (emitter.addListener as any)("onConnected", listener);
 }
 
 export function addDisconnectedListener(
   listener: (e: DisconnectedEvent) => void
 ) {
-  return emitter.addListener<DisconnectedEvent>("onDisconnected", listener);
+  // return emitter.addListener<DisconnectedEvent>("onDisconnected", listener);
+  return (emitter.addListener as any)("onDisconnected", listener);
 }
 
 export function addServiceReadyListener(
   listener: (e: ServiceReadyEvent) => void
 ) {
-  return emitter.addListener<ServiceReadyEvent>("onServiceReady", listener);
+  // return emitter.addListener<ServiceReadyEvent>("onServiceReady", listener);
+  return (emitter.addListener as any)("onServiceReady", listener);
 }
 
 export function addRealtimeListener(listener: (e: RealtimeEvent) => void) {
-  return emitter.addListener<RealtimeEvent>("onRealtime", listener);
+  // return emitter.addListener<RealtimeEvent>("onRealtime", listener);
+  return (emitter.addListener as any)("onRealtime", listener);
 }
 
 export function addInfoListener(listener: (e: InfoEvent) => void) {
-  return emitter.addListener<InfoEvent>("onInfo", listener);
+  // return emitter.addListener<InfoEvent>("onInfo", listener);
+  return (emitter.addListener as any)("onInfo", listener);
 }
 
 export function addHistoryFileListener(
   listener: (e: HistoryFileEvent) => void
 ) {
-  return emitter.addListener<HistoryFileEvent>("onHistoryFile", listener);
+  // return emitter.addListener<HistoryFileEvent>("onHistoryFile", listener);
+  return (emitter.addListener as any)("onHistoryFile", listener);
 }
 
 export function addReadProgressListener(
   listener: (e: ReadProgressEvent) => void
 ) {
-  return emitter.addListener<ReadProgressEvent>("onReadProgress", listener);
+  // return emitter.addListener<ReadProgressEvent>("onReadProgress", listener);
+  return (emitter.addListener as any)("onReadProgress", listener);
 }
 
 export function addErrorListener(listener: (e: ErrorEvent) => void) {
-  return emitter.addListener<ErrorEvent>("onError", listener);
+  // return emitter.addListener<ErrorEvent>("onError", listener);
+  return (emitter.addListener as any)("onError", listener);
 }

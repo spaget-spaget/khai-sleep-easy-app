@@ -1,8 +1,18 @@
 import axios from "axios";
 import { API_DEV, API_PROD, API_USERNAME, API_PASSWORD } from "@env";
 
-const rawBase = __DEV__ ? API_DEV : API_PROD;
+//Base settings
+//const rawBase = __DEV__ ? API_DEV : API_PROD;
+//const baseURL = rawBase?.replace(/\/+$/, "");
+
+//Dev settings
+const rawBase = API_DEV || "http://192.168.68.79/SleepEasy/ApiBackend";
 const baseURL = rawBase?.replace(/\/+$/, "");
+console.log("====================================");
+console.log("Resolved Base URL:", baseURL);
+console.log("Is DEV mode?", __DEV__);
+console.log("====================================");
+
 
 // Build a Basic auth header if credentials are provided in .env
 const makeAuthHeader = () => {
