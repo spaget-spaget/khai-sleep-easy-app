@@ -31,6 +31,8 @@ export default function Welcome() {
   const canSubmit =
     email.trim().length > 0 && password.length > 0 && !isSubmitting;
 
+  /*
+  OLD IMPLEMENTATION:
   const saveLogin = async () => {
     if (!canSubmit) return;
     try {
@@ -41,6 +43,45 @@ export default function Welcome() {
       });
 
       const patientId = result?.patient?.patient_id;
+
+      if (!patientId) {
+        throw new Error("No patient ID returned from server.");
+      }
+
+      await AsyncStorage.setItem("patientID", String(patientId));
+      if (result?.patient) {
+        await AsyncStorage.setItem(
+          "patientData",
+          JSON.stringify(result.patient)
+        );
+      }
+
+      router.replace("/(tabs)/history");
+    } catch (error) {
+      console.error("Error@Welcome.tsx:", error);
+      const message =
+        error instanceof Error ? error.message : "Login failed. Try again.";
+      Alert.alert("Login failed", message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  */
+
+  /**
+   * MODIFICATION: Updated saveLogin to check both patient_id and id properties in result.patient
+   * to handle flexible response structures from backend PHP. Old code preserved in comments above.
+   */
+  const saveLogin = async () => {
+    if (!canSubmit) return;
+    try {
+      setIsSubmitting(true);
+      const result = await loginWithEmailAndPassword({
+        email: email.trim(),
+        password,
+      });
+
+      const patientId = result?.patient?.patient_id ?? result?.patient?.id;
 
       if (!patientId) {
         throw new Error("No patient ID returned from server.");

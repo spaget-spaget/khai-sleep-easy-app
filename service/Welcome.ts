@@ -24,6 +24,8 @@ const buildApiError = ({
   return err;
 };
 
+/*
+OLD IMPLEMENTATION:
 export const loginWithEmailAndPassword = async (params: {
   email: string;
   password: string;
@@ -65,6 +67,92 @@ export const loginWithEmailAndPassword = async (params: {
     status,
     body,
     fallback: "Login failed.",
+  });
+};
+*/
+
+/**
+ * MODIFICATION: Enhanced loginWithEmailAndPassword to provide better error diagnostics
+ * when backend network connection fails (e.g. cleartext/IP errors) and to support flexible
+ * response data formats (patient_id, id, patient_data). Old code preserved in comments above.
+ */
+export const loginWithEmailAndPassword = async (params: {
+  email: string;
+  password: string;
+}): Promise<LoginResult> => {
+  const { email, password } = params;
+
+  if (!email?.trim()) throw new Error("Missing email.");
+  if (!password) throw new Error("Missing password.");
+
+  let res;
+  try {
+    res = await api.get(`sleep_easy_app/login_with_email_and_password.php`, {
+      params: { email: email.trim(), password },
+    });
+  } catch (error: any) {
+    if (
+      error?.code === "ERR_NETWORK" ||
+      error?.message?.includes("Network Error")
+    ) {
+      const url = api.defaults.baseURL || "server";
+      throw new Error(
+        `Cannot connect to server at ${url}.\n\n` +
+          `Please verify:\n` +
+          `1. Server is running\n` +
+          `2. IP address in .env is correct\n` +
+          `3. Device/emulator can reach host network`
+      );
+    }
+
+    const status =
+      error?.response?.data?.status ??
+      error?.response?.status ??
+      error?.status;
+    const body = error?.response?.data;
+    throw buildApiError({
+      status,
+      body,
+      fallback: error?.message || "Login failed.",
+    });
+  }
+
+  const body = res?.data ?? {};
+  const status = Number(body?.status ?? res.status);
+
+  if (res.status >= 200 && res.status < 300 && (status === 200 || body?.success === true)) {
+    const patient = body?.patient ?? body?.data?.patient ?? body?.patient_data;
+    const account = body?.account ?? body?.data?.account;
+
+    const patientId =
+      patient?.patient_id ??
+      patient?.id ??
+      body?.patient_id ??
+      body?.patientId;
+
+    if (!patientId) {
+      const msg =
+        body?.msg ||
+        body?.message ||
+        "Login succeeded, but no valid patient ID was returned from the server.";
+      throw new Error(msg);
+    }
+
+    return {
+      patient: patient ? { ...patient, patient_id: patientId } : { patient_id: patientId },
+      account,
+    };
+  }
+
+  const errorMsg =
+    body?.msg ||
+    body?.message ||
+    `Login failed (status ${status || res.status}). Please check your email and password.`;
+
+  throw buildApiError({
+    status,
+    body,
+    fallback: errorMsg,
   });
 };
 

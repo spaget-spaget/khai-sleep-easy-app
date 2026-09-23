@@ -22,7 +22,7 @@ import { uploadCsv } from "../service/History";
 //const baseURL = rawBase?.replace(/\/+$/, "");
 
 //Dev Mode
-const rawBase = API_DEV || "http://192.168.68.79/SleepEasy/ApiBackend";
+const rawBase = API_DEV || " 192.168.68.52/SleepEasy/ApiBackend";
 const baseURL = rawBase?.replace(/\/+$/, "");
 console.log("====================================");
 console.log("Resolved Base URL:", baseURL);

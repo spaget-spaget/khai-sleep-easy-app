@@ -6,7 +6,7 @@ import { API_DEV, API_PROD, API_USERNAME, API_PASSWORD } from "@env";
 //const baseURL = rawBase?.replace(/\/+$/, "");
 
 //Dev settings
-const rawBase = API_DEV || "http://192.168.68.79/SleepEasy/ApiBackend";
+const rawBase = API_DEV || "http://192.168.68.52/SleepEasy/ApiBackend";
 const baseURL = rawBase?.replace(/\/+$/, "");
 console.log("====================================");
 console.log("Resolved Base URL:", baseURL);
