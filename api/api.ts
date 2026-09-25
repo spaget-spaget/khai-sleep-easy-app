@@ -6,8 +6,22 @@ import { API_DEV, API_PROD, API_USERNAME, API_PASSWORD } from "@env";
 //const baseURL = rawBase?.replace(/\/+$/, "");
 
 //Dev settings
-const rawBase = API_DEV || "http://192.168.68.52/SleepEasy/ApiBackend";
-const baseURL = rawBase?.replace(/\/+$/, "");
+/* OLD IMPLEMENTATION:
+const rawBase = API_DEV || "http://192.168.68.1/ApiBackend";
+const baseURL = rawBase ? rawBase.trim().replace(/\s+/g, "").replace(/\/+$/, "") : "";
+*/
+
+/**
+ * MODIFICATION: Enhanced baseURL resolution supporting both DEV and PROD environments.
+ * - In __DEV__ mode: Uses API_DEV first, falls back to API_PROD or local fallback IP.
+ * - In production/APK builds (__DEV__ is false): Prefers API_PROD, but gracefully falls back to API_DEV
+ *   so standalone test APKs targeting dev servers won't break if API_PROD is omitted in .env.
+ * - Strips any accidental whitespace/spaces and trailing slashes.
+ */
+const rawBase = __DEV__
+  ? (API_DEV || API_PROD || "http://192.168.68.1/ApiBackend")
+  : (API_PROD || API_DEV || "http://192.168.68.1/ApiBackend");
+const baseURL = rawBase ? rawBase.trim().replace(/\s+/g, "").replace(/\/+$/, "") : "";
 console.log("====================================");
 console.log("Resolved Base URL:", baseURL);
 console.log("Is DEV mode?", __DEV__);
@@ -58,5 +72,8 @@ export const authHeader = makeAuthHeader();
 
 export default axios.create({
   baseURL,
-  headers: authHeader ? { Authorization: authHeader } : undefined,
+  headers: {
+    ...(authHeader ? { Authorization: authHeader } : {}),
+    "ngrok-skip-browser-warning": "69420",
+  },
 });

@@ -50,7 +50,10 @@ export const uploadCsv = async (params: {
     type: "text/csv",
   } as any);
 
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "ngrok-skip-browser-warning": "69420",
+  };
   if (authHeader) headers.Authorization = authHeader;
 
   const res = await fetch(`${baseURL}/staff/o2ring-data/upload.php`, {

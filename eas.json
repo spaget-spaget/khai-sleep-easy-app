@@ -9,12 +9,25 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "API_DEV": "https://powdered-sliceable-ride.ngrok-free.dev/ApiBackend",
+        "API_PROD": "https://powdered-sliceable-ride.ngrok-free.dev/ApiBackend",
+        "API_USERNAME": "sleepea-o2ring-upload",
+        "API_PASSWORD": "Romans8:28"
+      }
     },
     "production": {
       "autoIncrement": true,
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "API_DEV": "https://api.sleepeasysingapore.com",
+        "API_PROD": "https://api.sleepeasysingapore.com"
       }
     }
   },

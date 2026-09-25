@@ -29,8 +29,22 @@ import HistoryCard from "../../../components/HistoryCard";
 import { useTheme } from "../../../theme/ThemeProvider";
 import { useO2Ring } from "../../../service/O2RingProvider";
 
+/* OLD IMPLEMENTATION:
 const rawBase = __DEV__ ? API_DEV : API_PROD;
-const baseURL = rawBase?.replace(/\/+$/, "");
+const baseURL = rawBase ? rawBase.trim().replace(/\s+/g, "").replace(/\/+$/, "") : "";
+*/
+
+/**
+ * MODIFICATION: Enhanced baseURL resolution supporting both DEV and PROD environments.
+ * - In __DEV__ mode: Uses API_DEV first, falls back to API_PROD or local fallback IP.
+ * - In production/APK builds (__DEV__ is false): Prefers API_PROD, but gracefully falls back to API_DEV
+ *   so standalone test APKs targeting dev servers won't break if API_PROD is omitted in .env.
+ * - Strips any accidental whitespace/spaces and trailing slashes.
+ */
+const rawBase = __DEV__
+  ? (API_DEV || API_PROD || "http://192.168.68.1/ApiBackend")
+  : (API_PROD || API_DEV || "http://192.168.68.1/ApiBackend");
+const baseURL = rawBase ? rawBase.trim().replace(/\s+/g, "").replace(/\/+$/, "") : "";
 
 export default function History() {
   const { colors: C, fonts: F } = useTheme();
